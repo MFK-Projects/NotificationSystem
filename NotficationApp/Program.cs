@@ -17,7 +17,8 @@ namespace NotficationApp
 {
     internal class Program
     {
-        private static string[] selectedItem;
+        private readonly static string[] selectedItemForCurentUser = { "domainname", "fullname", "identityid" };
+        private readonly static string[] selectedItemForUserTasks = { "subject", "prioritycode", "new_task_status", "new_task_type", "_ownerid_value", "new_remained_time_hour", "new_remaining_days" };
         private static string UserName;
 
         static void Main(string[] args)
@@ -35,20 +36,40 @@ namespace NotficationApp
                     .AddScoped<IMFKIANRequest, MFKIANRequest>()
                     .BuildServiceProvider();
 
+                var request = servies.GetService<IMFKIANRequest>();
+
+
+                while (UserName == null) { Thread.Sleep(1000); }
+
+
+                var curentUser = request.GetCurentUserDetails(new DataRequestModel { EntitiyName = "systemusers", Count = 3, SelectItem = selectedItemForCurentUser, SystemUserName = UserName });
+
 
                 while (true)
                 {
+                    #region Ensure That Variable are assgined
 
-                    var request = servies.GetService<IMFKIANRequest>();
-                    selectedItem = new string[] { "domainname", "fullname", "identityid" };
+                    if (string.IsNullOrEmpty(curentUser.username) || string.IsNullOrEmpty(curentUser.userid))
+                        curentUser = request.GetCurentUserDetails(new DataRequestModel { EntitiyName = "systemusers", Count = 3, SelectItem = selectedItemForCurentUser, SystemUserName = UserName });
 
-                    while (UserName == null) { Thread.Sleep(1000); }
+                    if (servies == null)
+                        servies = new ServiceCollection()
+                      .AddScoped<IMFKIANRequest, MFKIANRequest>()
+                      .BuildServiceProvider();
+
+                    if (request == null)
+                        request = servies.GetService<IMFKIANRequest>();
+                    #endregion
+
+                    var usreTasks = request.GetTaskData(new DataRequestModel { EntitiyName = "tasks", SelectItem = selectedItemForUserTasks, SystemUserName = UserName });
 
 
-                    request.GetCurentUserDetails(new DataRequestModel { EntitiyName = "systemusers", Count = 3, SelectItem = selectedItem, SystemUserName = UserName });
-                    
-                    
-                    Thread.Sleep(TimeSpan.FromSeconds(30));
+                    foreach (var task in usreTasks)
+                        SendToastNotification(task.Subject, task.NewTaskType.ToString(), "http://google.com");
+
+
+
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
             }
             catch (Exception)

@@ -13,7 +13,7 @@ namespace NotficationApp.HttpRequest
     {
         (string username, string userid) GetCurentUserDetails(DataRequestModel model);
 
-        Task GetTaskData(DataRequestModel model);
+        List<TasksDataModel> GetTaskData(DataRequestModel model);
     }
 
     public class MFKIANRequest : IMFKIANRequest
@@ -26,8 +26,8 @@ namespace NotficationApp.HttpRequest
         {
             try
             {
-                var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = model.SystemUserName, FilterKey = "eq" } };
-
+                //var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = model.SystemUserName, FilterKey = "eq" } };
+                var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = "KIAN\\R.Khaleghi", FilterKey = "eq" } };
 
                 var url = UrlBuilder(new UrlBuilderModel { BaseUrl = baseUrl, EntityName = model.EntitiyName, SelectedItem = model.SelectItem, FilterItem = filter });
 
@@ -42,9 +42,23 @@ namespace NotficationApp.HttpRequest
 
 
                 var jsonConverter = JsonConvert.DeserializeObject<ResponseDataModel>(_stringdata);
+                Value tempdata = new Value();
 
-                return ("", "");
+                if (jsonConverter.Value.Count == 1)
 
+                {
+                    foreach (var item in jsonConverter.Value)
+                    {
+                        tempdata.Domainname = item.Domainname;
+                        tempdata.Ownerid = item.Ownerid;
+                    }
+
+                    return (tempdata.Domainname,tempdata.Ownerid);
+                }
+
+
+                return (string.Empty, string.Empty);
+              
 
             }
             catch (Exception)
@@ -54,11 +68,29 @@ namespace NotficationApp.HttpRequest
             }
         }
 
-        public async Task GetTaskData(DataRequestModel model)
+        public List<TasksDataModel> GetTaskData(DataRequestModel model)
         {
             try
             {
+                //  var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = model.SystemUserName, FilterKey = "eq" } };
+                var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = "fed89561-53ec-eb11-9129-000c2995bbbf", FilterKey = "eq" } };
 
+                var url = UrlBuilder(new UrlBuilderModel { BaseUrl = baseUrl, EntityName = model.EntitiyName, SelectedItem = model.SelectItem, FilterItem = filter });
+
+                var headers = new List<HeaderModel>() {
+
+                    new HeaderModel{Key ="OData-Version",Value ="4.0"},
+                };
+
+
+                var _stringData = SendHtppRequest(new HtppRequestModel { Headers = headers, Url = url });
+
+                var formatedData = JsonConvert.DeserializeObject<List<TasksDataModel>>(_stringData);
+
+                if (formatedData.Count > 0)
+                    return formatedData;
+                else
+                    return null;
             }
             catch (Exception)
             {
@@ -118,7 +150,7 @@ namespace NotficationApp.HttpRequest
             {
                 url += @"&$filter=";
                 foreach (var item in model.FilterItem)
-                    url += "  " + item.Name +" "+item.FilterKey+ " '" + item.Value + "'";
+                    url += "  " + item.Name + " " + item.FilterKey + " '" + item.Value + "'";
             }
 
             return url;
