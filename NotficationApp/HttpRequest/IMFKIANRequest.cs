@@ -26,8 +26,10 @@ namespace NotficationApp.HttpRequest
         {
             try
             {
+                var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = model.SystemUserName, FilterKey = "eq" } };
 
-                var url = UrlBuilder(new UrlBuilderModel { BaseUrl = baseUrl, EntityName = model.EntitiyName, SelectedItem = model.SelectItem });
+
+                var url = UrlBuilder(new UrlBuilderModel { BaseUrl = baseUrl, EntityName = model.EntitiyName, SelectedItem = model.SelectItem, FilterItem = filter });
 
                 var headers = new List<HeaderModel>() {
 
@@ -36,12 +38,12 @@ namespace NotficationApp.HttpRequest
 
                 };
 
-                var _stringdata = SendHtppRequest(new HtppRequestModel { Headers = headers,Url= url });
+                var _stringdata = SendHtppRequest(new HtppRequestModel { Headers = headers, Url = url });
 
 
                 var jsonConverter = JsonConvert.DeserializeObject<ResponseDataModel>(_stringdata);
 
-                return ();
+                return ("", "");
 
 
             }
@@ -71,7 +73,7 @@ namespace NotficationApp.HttpRequest
         private string SendHtppRequest(HtppRequestModel requestModel)
         {
 
-          var _client = new WebClient();
+            var _client = new WebClient();
 
             try
             {
@@ -87,11 +89,11 @@ namespace NotficationApp.HttpRequest
                 throw new Exception("error on WebClient method");
             }
             finally
-            { 
+            {
                 _client?.Dispose();
             }
 
-    
+
         }
         private string UrlBuilder(UrlBuilderModel model)
         {
@@ -112,15 +114,14 @@ namespace NotficationApp.HttpRequest
                         url += model.SelectedItem[i] + ",";
             }
 
+            if (model.FilterItem.Count > 0)
+            {
+                url += @"&$filter=";
+                foreach (var item in model.FilterItem)
+                    url += "  " + item.Name +" "+item.FilterKey+ " '" + item.Value + "'";
+            }
+
             return url;
-
-
-            //if (model.Filters.Length > 0)
-            //{
-            //    url+= @"&$filter="
-            //    for (int i = 0; i < model.Filters.Length; i++)
-            //}
-
 
         }
     }

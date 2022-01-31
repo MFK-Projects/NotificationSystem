@@ -6,7 +6,7 @@ namespace NotficationApp.Models
 {
     public class DataRequestModel
     {
-        public int UserId { get; set; }
+        public string SystemUserName { get; set; }
         public string EntitiyName { get; set; }
         public string[] SelectItem { get; set; }
         public int Count { get; set; } = 3;
@@ -32,8 +32,15 @@ namespace NotficationApp.Models
     {
         public string EntityName { get; set; }
         public string BaseUrl { get; set; }
-       // public string[] Filters { get; set; }
         public string[] SelectedItem { get; set; }
+        public List<FilterItem> FilterItem { get; set; }
 
+    }
+
+    public class FilterItem
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+        public string FilterKey { get;set; }
     }
 }

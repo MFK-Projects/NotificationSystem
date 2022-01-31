@@ -11,32 +11,48 @@ using System.Threading;
 using NotficationApp.Models;
 using System.Net;
 using System.IO;
+using System.DirectoryServices.AccountManagement;
 
 namespace NotficationApp
 {
     internal class Program
     {
-        private static string[] selectedItem = default;
+        private static string[] selectedItem;
+        private static string UserName;
+
         static void Main(string[] args)
         {
+
             try
             {
+
+                Task.Factory.StartNew(() =>
+                {
+                    UserName = UserPrincipal.Current.Name;
+                });
+
                 var servies = new ServiceCollection()
                     .AddScoped<IMFKIANRequest, MFKIANRequest>()
                     .BuildServiceProvider();
 
 
-                do
+                while (true)
                 {
+
                     var request = servies.GetService<IMFKIANRequest>();
-                    selectedItem = new string[]{ "domainname","fullname","identityid" };
-                    request.GetCurentUserDetails(new DataRequestModel { EntitiyName = "systemusers", Count = 3, SelectItem = selectedItem, UserId = 40 });
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
-                } while (true);
+                    selectedItem = new string[] { "domainname", "fullname", "identityid" };
+
+                    while (UserName == null) { Thread.Sleep(1000); }
+
+
+                    request.GetCurentUserDetails(new DataRequestModel { EntitiyName = "systemusers", Count = 3, SelectItem = selectedItem, SystemUserName = UserName });
+                    
+                    
+                    Thread.Sleep(TimeSpan.FromSeconds(30));
+                }
             }
             catch (Exception)
             {
-
                 throw;
             }
 
@@ -117,7 +133,5 @@ namespace NotficationApp
             toast.SetToastScenario(ToastScenario.Reminder);
             toast.Show();
         }
-
-
     }
 }
