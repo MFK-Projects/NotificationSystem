@@ -24,4 +24,11 @@ namespace NotficationApp.Enums
         Accepted=100_000_004,
         Expired =100_000_005
     }
+
+
+    public enum FilterType
+    {
+        Int,
+        String
+    }
 }

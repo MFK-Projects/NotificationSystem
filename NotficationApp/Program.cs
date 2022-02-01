@@ -65,7 +65,7 @@ namespace NotficationApp
 
 
                     foreach (var task in usreTasks)
-                        SendToastNotification(task.Subject, task.NewTaskType.ToString(), "http://google.com");
+                        SendToastNotification(task.subject, task.new_task_type.ToString(), "http://google.com");
 
 
 

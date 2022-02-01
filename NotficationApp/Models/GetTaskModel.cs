@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NotficationApp.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -42,5 +43,6 @@ namespace NotficationApp.Models
         public string Name { get; set; }
         public string Value { get; set; }
         public string FilterKey { get;set; }
+        public FilterType FilterType { get; set; }
     }
 }

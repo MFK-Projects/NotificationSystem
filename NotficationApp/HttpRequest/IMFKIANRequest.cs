@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NotficationApp.Models;
 using Newtonsoft.Json;
+using NotficationApp.Enums;
 
 namespace NotficationApp.HttpRequest
 {
@@ -27,7 +28,7 @@ namespace NotficationApp.HttpRequest
             try
             {
                 //var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = model.SystemUserName, FilterKey = "eq" } };
-                var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = "KIAN\\R.Khaleghi", FilterKey = "eq" } };
+                var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = "KIAN\\R.Khaleghi", FilterKey = "eq" ,FilterType = FilterType.String } };
 
                 var url = UrlBuilder(new UrlBuilderModel { BaseUrl = baseUrl, EntityName = model.EntitiyName, SelectedItem = model.SelectItem, FilterItem = filter });
 
@@ -41,7 +42,7 @@ namespace NotficationApp.HttpRequest
                 var _stringdata = SendHtppRequest(new HtppRequestModel { Headers = headers, Url = url });
 
 
-                var jsonConverter = JsonConvert.DeserializeObject<ResponseDataModel>(_stringdata);
+                var jsonConverter = JsonConvert.DeserializeObject<ResponseDataModel<Value>>(_stringdata);
                 Value tempdata = new Value();
 
                 if (jsonConverter.Value.Count == 1)
@@ -53,12 +54,12 @@ namespace NotficationApp.HttpRequest
                         tempdata.Ownerid = item.Ownerid;
                     }
 
-                    return (tempdata.Domainname,tempdata.Ownerid);
+                    return (tempdata.Domainname, tempdata.Ownerid);
                 }
 
 
                 return (string.Empty, string.Empty);
-              
+
 
             }
             catch (Exception)
@@ -73,7 +74,7 @@ namespace NotficationApp.HttpRequest
             try
             {
                 //  var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = model.SystemUserName, FilterKey = "eq" } };
-                var filter = new List<FilterItem> { new FilterItem { Name = "domainname", Value = "fed89561-53ec-eb11-9129-000c2995bbbf", FilterKey = "eq" } };
+                var filter = new List<FilterItem> { new FilterItem { Name = "_ownerid_value", Value = "fed89561-53ec-eb11-9129-000c2995bbbf", FilterKey = "eq" ,FilterType = FilterType.Int} };
 
                 var url = UrlBuilder(new UrlBuilderModel { BaseUrl = baseUrl, EntityName = model.EntitiyName, SelectedItem = model.SelectItem, FilterItem = filter });
 
@@ -85,12 +86,9 @@ namespace NotficationApp.HttpRequest
 
                 var _stringData = SendHtppRequest(new HtppRequestModel { Headers = headers, Url = url });
 
-                var formatedData = JsonConvert.DeserializeObject<List<TasksDataModel>>(_stringData);
+                var formatedData = JsonConvert.DeserializeObject<ResponseDataModel<TasksDataModel>>(_stringData);
 
-                if (formatedData.Count > 0)
-                    return formatedData;
-                else
-                    return null;
+                return formatedData.Value;
             }
             catch (Exception)
             {
@@ -150,7 +148,10 @@ namespace NotficationApp.HttpRequest
             {
                 url += @"&$filter=";
                 foreach (var item in model.FilterItem)
-                    url += "  " + item.Name + " " + item.FilterKey + " '" + item.Value + "'";
+                    if (item.FilterType == FilterType.String)
+                        url += "  " + item.Name + " " + item.FilterKey + " '" + item.Value + "'";
+                    else if (item.FilterType == FilterType.Int)
+                        url += "  " + item.Name + " " + item.FilterKey + " " + item.Value;
             }
 
             return url;
